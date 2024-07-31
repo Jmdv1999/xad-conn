@@ -1,0 +1,23 @@
+<!-- eliminar-asignacion.ejs -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminar Asignación de Zona</title>
+</head>
+<body>
+    <h1>Eliminar Asignación de Zona</h1>
+    <form method="POST" action="/eliminar-asignacion">
+        <select name="asignacion_id">
+            <% dispositivos.forEach(asignacion => { %>
+                <option value="<%= asignacion.id %>">
+                    <%= asignacion.imei %> - <%= asignacion.nombre_zona %>
+                </option>
+            <% }); %>
+        </select>
+        <button type="submit">Eliminar Asignación</button>
+    </form>
+</body>
+</html>

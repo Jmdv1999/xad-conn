@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Dispositivo</title>
+</head>
+<body>
+    <h1>Crear Dispositivo</h1>
+    <form action="/crear-dispositivo" method="POST">
+        <div>
+            <label for="imei">IMEI:</label>
+            <input type="text" id="imei" name="imei" required>
+        </div>
+        <div>
+            <label for="id_dispositivo">ID Dispositivo:</label>
+            <input type="text" id="id_dispositivo" name="id_dispositivo" required>
+        </div>
+        <div>
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" required>
+        </div>
+        <div>
+            <label for="vehiculo">Vehículo:</label>
+            <input type="text" id="vehiculo" name="vehiculo" required>
+        </div>
+        <button type="submit">Crear Dispositivo</button>
+    </form>
+</body>
+</html>
