@@ -1,8 +1,17 @@
-// app.js
+// coordenadas
+const { Ballena } = require("./coordenadas/Ballena.js");
+const { Casco_Central_Uno } = require("./coordenadas/Casco_Central_Uno.js");
+const { Casitas_Cementerio } = require("./coordenadas/Casitas_Cementerio.js");
+const { Excepciones } = require("./coordenadas/Excepciones.js");
+const { Guarico } = require("./coordenadas/Guarico.js");
+const { Nueva_Miranda } = require("./coordenadas/Nueva_Miranda.js");
+const { Salinas } = require("./coordenadas/Salinas.js");
+const { San_Crispulo } = require("./coordenadas/San_Crispulo.js");
+
+// app.<r>
 const express = require("express");
 const axios = require("axios");
 const db = require("./database");
-const fs = require("fs");
 
 const app = express();
 const port = 3000;
@@ -11,12 +20,44 @@ app.use(express.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
 
+app.get(
+  "/14f539d73aa2411175ef606eb879f7c57b618dc98611ac348e22075ca47dfd9f",
+  (req, res) => {
+    db.all("SELECT * FROM dispositivos", (err, rows) => {
+      if (err) {
+        throw err;
+      }
+      res.render("index", {
+        dispositivos: JSON.stringify(rows),
+        Ballena: JSON.stringify(Ballena),
+        Casco_Central_Uno: JSON.stringify(Casco_Central_Uno),
+        Casitas_Cementerio: JSON.stringify(Casitas_Cementerio),
+        Excepciones: JSON.stringify(Excepciones),
+        Guarico: JSON.stringify(Guarico),
+        Nueva_Miranda: JSON.stringify(Nueva_Miranda),
+        Salinas: JSON.stringify(Salinas),
+        San_Crispulo: JSON.stringify(San_Crispulo),
+      });
+    });
+  }
+);
+
 app.get("/", (req, res) => {
   db.all("SELECT * FROM dispositivos", (err, rows) => {
     if (err) {
       throw err;
     }
-    res.render("index", { dispositivos: JSON.stringify(rows) });
+    res.render("seguimiento", {
+      dispositivos: JSON.stringify(rows),
+      Ballena: JSON.stringify(Ballena),
+      Casco_Central_Uno: JSON.stringify(Casco_Central_Uno),
+      Casitas_Cementerio: JSON.stringify(Casitas_Cementerio),
+      Excepciones: JSON.stringify(Excepciones),
+      Guarico: JSON.stringify(Guarico),
+      Nueva_Miranda: JSON.stringify(Nueva_Miranda),
+      Salinas: JSON.stringify(Salinas),
+      San_Crispulo: JSON.stringify(San_Crispulo),
+    });
   });
 });
 
@@ -34,83 +75,38 @@ app.get("/api/dispositivo/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Ruta para verificar la zona del dispositivo técnico
+// Ruta para verificar la zona del dispositivo
 app.get("/verificar-zona/:dispositivo_tecnico_id", (req, res) => {
   const dispositivo_tecnico_id = req.params.dispositivo_tecnico_id;
 
-  // Consulta para obtener el ID de la zona asociada al dispositivo técnico
+  // Consulta para obtener los IDs de las zonas asociadas al dispositivo técnico
   const sql = `SELECT zona_id FROM zona_dispositivo_tecnico WHERE dispositivo_tecnico_id = ?`;
-  db.get(sql, [dispositivo_tecnico_id], (err, row) => {
+  db.all(sql, [dispositivo_tecnico_id], (err, rows) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error al consultar la base de datos");
-    } else if (row) {
-      const zona_id = row.zona_id;
+    } else if (rows && rows.length > 0) {
+      const zonaIDs = rows.map((row) => row.zona_id);
 
-      // Consulta para obtener el nombre de la zona
-      const sql_zona = `SELECT nombre FROM zonas WHERE id = ?`;
-      db.get(sql_zona, [zona_id], (err_zona, row_zona) => {
-        if (err_zona) {
-          console.error(err_zona);
+      // Consulta para obtener los nombres de las zonas
+      const sql_zonas = `SELECT nombre FROM zonas WHERE id IN (${zonaIDs.join(
+        ","
+      )})`;
+      db.all(sql_zonas, (err_zonas, rows_zonas) => {
+        if (err_zonas) {
+          console.error(err_zonas);
           res.status(500).send("Error al consultar la base de datos");
-        } else if (row_zona) {
-          const nombre_zona = row_zona.nombre;
-
-          res.json({ zona: `${nombre_zona.replace(/\s+/g, "_")}` });
+        } else if (rows_zonas && rows_zonas.length > 0) {
+          const nombres_zonas = rows_zonas.map((row_zona) => row_zona.nombre);
+          res.json({ zonas_asignadas: nombres_zonas });
         } else {
-          res.json({ zona: `no hay informacion de la zona` });
+          res.json({ zonas_asignadas: [] });
         }
       });
     } else {
-      res.json({
-        zona: `null`,
-      });
+      res.json({ zonas_asignadas: [] });
     }
   });
-});
-// Ruta para renderizar la vista de asignación
-app.get("/asignar", (req, res) => {
-  db.all(`SELECT * FROM dispositivos`, (err, dispositivos) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    db.all(`SELECT * FROM tecnicos`, (err, tecnicos) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.render("asignar", { dispositivos, tecnicos });
-    });
-  });
-});
-
-// Asignar técnico a dispositivo
-app.post("/asignar-tecnico", (req, res) => {
-  const { dispositivo_id, tecnico_id } = req.body;
-  db.run(
-    `INSERT INTO dispositivo_tecnico (dispositivo_id, tecnico_id, asignado) VALUES (?, ?, 1)`,
-    [dispositivo_id, tecnico_id],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ id: this.lastID });
-    }
-  );
-});
-
-// Desasignar técnico de dispositivo
-app.post("/desasignar-tecnico", (req, res) => {
-  const { dispositivo_id, tecnico_id } = req.body;
-  db.run(
-    `UPDATE dispositivo_tecnico SET asignado = 0 WHERE dispositivo_id = ? AND tecnico_id = ?`,
-    [dispositivo_id, tecnico_id],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ message: "Técnico desasignado" });
-    }
-  );
 });
 
 // Obtener técnicos asignados a un dispositivo
@@ -146,8 +142,6 @@ app.post("/crear-dispositivo", (req, res) => {
     }
   );
 });
-
-//tecnicos
 
 // Ruta para renderizar la vista de creación de técnicos
 app.get("/crear-tecnico", (req, res) => {
@@ -239,6 +233,54 @@ app.post("/crear-zona", (req, res) => {
     res.redirect("/crear-zona");
   });
 });
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
+});
+
+//Tecnico
+
+// Ruta para renderizar la vista de asignación
+app.get("/asignar", (req, res) => {
+  db.all(`SELECT * FROM dispositivos`, (err, dispositivos) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    db.all(`SELECT * FROM tecnicos`, (err, tecnicos) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.render("asignar", { dispositivos, tecnicos });
+    });
+  });
+});
+
+// Asignar técnico a dispositivo
+app.post("/asignar-tecnico", (req, res) => {
+  const { dispositivo_id, tecnico_id } = req.body;
+  db.run(
+    `INSERT INTO dispositivo_tecnico (dispositivo_id, tecnico_id, asignado) VALUES (?, ?, 1)`,
+    [dispositivo_id, tecnico_id],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+// Desasignar técnico de dispositivo
+app.post("/desasignar-tecnico", (req, res) => {
+  const { dispositivo_id, tecnico_id } = req.body;
+  db.run(
+    `UPDATE dispositivo_tecnico SET asignado = 0 WHERE dispositivo_id = ? AND tecnico_id = ?`,
+    [dispositivo_id, tecnico_id],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: "Técnico desasignado" });
+    }
+  );
 });

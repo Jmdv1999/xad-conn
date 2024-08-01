@@ -11,12 +11,26 @@
 
 <body>
     <script>
+        var tiempo = 1
+        const dispositivosSeleccionados = [];
+        var zonas = []
+
         //contaderes para utilizar adelante, cuando los dispositivos esten fuera de la zona asignada
         var contadores = {
             Ranger: 0,
             Fortaleza: 0,
             Hilux: 0,
             Mazda: 0
+        }
+        var colores = {
+            Fortaleza: "green",
+            Mazda: "pink",
+            Hilux: "blue",
+            Ranger: "red"
+        }
+        function cambiarTiempo() {
+
+            tiempo = document.getElementById('tiempo').value
         }
 
         //aqui guardaremos la ubicacion de los marcadores a imprimir en el mapa
@@ -38,10 +52,25 @@
         Salinas = JSON.parse('<%-(Salinas) %>')
         San_Crispulo = JSON.parse('<%-(San_Crispulo) %>')
 
-
+        const zonasAsignadas = {}
 
         document.addEventListener('DOMContentLoaded', () => {
-            //Instanciamos el mapa
+
+            const dispositivosList = document.getElementById('dispositivos-list');
+            dispositivos.forEach(dispositivo => {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = dispositivo.id_dispositivo;
+                checkbox.id = `checkbox-${dispositivo.id_dispositivo}`;
+                // Puedes agregar más atributos o estilos según tus necesidades
+
+                const label = document.createElement('label');
+                label.htmlFor = `checkbox-${dispositivo.id_dispositivo}`;
+                label.textContent = dispositivo.vehiculo;
+
+                dispositivosList.appendChild(checkbox);
+                dispositivosList.appendChild(label);
+            });
             map = L.map('map').setView([10.719891, -71.515795], 16);
 
             L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
@@ -49,47 +78,49 @@
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             }).addTo(map);
 
-            pintarZona(Ballena)
-            pintarZona(Casco_Central_Uno)
-            pintarZona(Casitas_Cementerio)
-            pintarZona(Excepciones)
-            pintarZona(Guarico)
-            pintarZona(Nueva_Miranda)
-            pintarZona(Salinas)
-            pintarZona(San_Crispulo)
 
+            dispositivos.forEach(dispositivo => {
+                const checkbox = document.getElementById(`checkbox-${dispositivo.id_dispositivo}`);
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        // Si está seleccionado, agrega el dispositivo al arreglo
+                        dispositivosSeleccionados.push(dispositivo);
 
-
-            //Obtener coordenadas al hacer click
-            map.on('click', function (e) {
-                var clickedLatLng = e.latlng;
-                console.log([clickedLatLng.lat, clickedLatLng.lng]);
+                    } else {
+                        // Si se deselecciona, elimina el dispositivo del arreglo
+                        const index = dispositivosSeleccionados.findIndex(d => d.id_dispositivo === dispositivo.id_dispositivo);
+                        if (index !== -1) {
+                            dispositivosSeleccionados.splice(index, 1);
+                        }
+                    }
+                    ejecutar();
+                });
             });
 
             setInterval(() => {
                 ejecutar();
-                //console.log(`se pinto el mapa a las ${obtenerHoraActual()}`)
-            }, 5000);
+            }, tiempo * 60 * 1000);
         });
+
         function ejecutar() {
-            // Eliminamos los marcadores existentes
             marcadores.forEach(marcador => {
                 map.removeLayer(marcador);
             });
             marcadores = []; // Limpiamos la lista de marcadores
 
-            dispositivos.forEach(dispositivo => {
-                realizarPeticion(dispositivo.id_dispositivo, dispositivo.vehiculo);
+            dispositivosSeleccionados.forEach(seleccionado => {
+                //console.log(seleccionado)
+                realizarPeticion(seleccionado.id_dispositivo, seleccionado.vehiculo);
 
             });
         }
+
         function realizarPeticion(id_dispositivo, vehiculo) {
             const url = `http://localhost:3000/api/dispositivo/${id_dispositivo}`;
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     let datos = JSON.parse(data);
-                    //console.log(datos)
                     if (datos.latitude && datos.longitude) {
                         let lat = parseFloat(datos.latitude);
                         let lng = parseFloat(datos.longitude);
@@ -101,26 +132,15 @@
                             .then(response => response.json())
                             .then(data => {
                                 zonas = data["zonas_asignadas"]
-
                                 zonas.forEach(zonaAsignada => {
                                     if (zonaAsignada != "") {
                                         let coordenadasZona = zona(zonaAsignada.replace(/\s+/g, "_"))
                                         var zonaPolygon = L.polygon(coordenadasZona)
-                                        // Verificar si el marcador está dentro del polígono
-                                        if (zonaPolygon.getBounds().contains(currentMarker.getLatLng())) {
-                                            (contadores[vehiculo]) = 0
-                                            console.log(`El vehiculo ${vehiculo} está dentro de la zona ${zonaAsignada}`);
-                                        } else {
-                                            contadores[vehiculo] = contadores[vehiculo] + 1
-
-                                            console.log(`El vehiculo ${vehiculo} está fuera de la zona ${zonaAsignada}`);
-                                            if (contadores[vehiculo] % 3 === 0) {
-                                                //enviarMensajeDiscord(`El vehiculo  ${vehiculo} está fuera de la zona ${zona_asignada}`, `hay ${contadorFortaleza} muestras fuera de su zona asignada`, "https://discord.com/api/webhooks/1267911462861406248/PHWOzhTiiCBv2nIbUKGRUq03GfFWCEGG1tYygnQcYvYl2tfideQfVDeDOpjWzn0WNBVq");
-                                                //console.log(`total de muestras ${contadores[vehiculo]}`)
-                                            }
-                                        }
+                                        zonasAsignadas[id_dispositivo] = zonaPolygon;
+                                        const indiceAleatorio = Math.floor(Math.random() * colores.length);
+                                        pintarZona(coordenadasZona, colores[vehiculo])
                                     }
-                                        
+
                                 });
 
 
@@ -128,14 +148,23 @@
                             })
                             .catch(error => console.error('Error:', error));
 
+
                     }
                 })
                 .catch(error => console.error('Error:', error));
         }
 
-        function pintarZona(zona) {
+        function pintarZona(zona, color = "red") {
             for (element in zona) {
-                L.polygon(zona[element], { color: 'red' }).addTo(map)
+                for (const dispositivoId in zonasAsignadas) {
+                    const zonaAsignada = zonasAsignadas[dispositivoId];
+                    if (!zonaAsignada) {
+                        // Si no hay zona asignada, elimina el polígono correspondiente
+                        map.removeLayer(zonaAsignada);
+                    }
+                }
+
+                L.polygon(zona[element], { color: color }).addTo(map)
             }
         }
 
@@ -150,8 +179,8 @@
                 case 'Guarico':
                     return Guarico;
                     break;
-                case 'Casco_Central_1':
-                    return Casco_Central_1;
+                case 'Casco_Central_Uno':
+                    return Casco_Central_Uno;
                     break;
                 case 'Ballena':
                     return Ballena;
@@ -159,50 +188,22 @@
                 case 'Guarico':
                     return Casitas_Cementerio;
                     break;
-                case 'Casco_Central_1':
+                case 'San_Crispulo':
                     return San_Crispulo;
                     break;
                 default:
                     break;
             }
         }
-        function enviarMensajeDiscord(titulo, mensaje, webhookurl) {
-            const json_data = {
-                content: null,
-                username: "SapoBot",
-                avatar_url: "https://pbs.twimg.com/media/DZlSgoJWkAAc8HS?format=jpg&name=360x360",
-                embeds: [
-                    {
-                        title: titulo,
-                        description: mensaje,
-                        color: 5375,
-                        timestamp: new Date().toISOString()
-                    }
-                ]
-            };
-
-            fetch(webhookurl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(json_data)
-            })
-                .then(response => response.text())
-                .then(result => {
-                    console.log("Mensaje enviado correctamente:", result);
-                })
-                .catch(error => {
-                    console.error("Error al enviar el mensaje:", error);
-                });
-        }
-
-
 
 
     </script>
 
+    <div id="dispositivos-list">
 
+    </div>
+    <input type="number" name="tiempo" id="tiempo">
+    <button onclick="cambiarTiempo()">Cambiar tiempo de actualizacion</button>
     <div id="map"></div>
 
     <style>
