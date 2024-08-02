@@ -1,15 +1,63 @@
+dispositivos-lis
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Dispositivos</title>
+    <title>GPS || CONNECTIONSEyT</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 
-<body>
+<body class="h-screen ">
+    <div class="navbar bg-base-100 ixed">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                    <li><a href="/asignar-tecnico">Asignar Vehiculo a tecnico</a></li>
+                    <li><a href="/asignacion">Asignar zona a Vehiculo</a></li>
+                    <li><a href="/">Monitorear</a></li>
+                </ul>
+            </div>
+            <a class="btn btn-ghost text-xl">ConnectionsEyT</a>
+        </div>
+        <div class="navbar-end hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/asignar-tecnico">Asignar Vehiculo a tecnico</a></li>
+                <li><a href="/asignacion">Asignar zona a Vehiculo</a></li>
+                <li><a href="/">Monitorear</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <main class="h-screen flex flex-col">
+        <div id="container-form" class="w-full p-6">
+            <div id="dispositivos-list" class="flex flex-row">
+
+            </div>
+            <input type="number" name="tiempo" id="tiempo" placeholder="Cambiar tiempo de actualizacion"
+                class="input input-bordered input-primary w-full max-w-xs" />
+            <button class="btn btn-primary" onclick="cambiarTiempo()">Guardar</button>
+        </div>
+        <div id="container-form" class="w-full bg-primary flex content-center items-center justify-center">
+            <div id="map" class="w-full h-screen"></div>
+        </div>
+    </main>
+
+
+
+
     <script>
         var tiempo = 1
         const dispositivosSeleccionados = [];
@@ -31,6 +79,7 @@
         function cambiarTiempo() {
 
             tiempo = document.getElementById('tiempo').value
+            document.getElementById('tiempo').value = ""
         }
 
         //aqui guardaremos la ubicacion de los marcadores a imprimir en el mapa
@@ -58,18 +107,16 @@
 
             const dispositivosList = document.getElementById('dispositivos-list');
             dispositivos.forEach(dispositivo => {
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.value = dispositivo.id_dispositivo;
-                checkbox.id = `checkbox-${dispositivo.id_dispositivo}`;
-                // Puedes agregar más atributos o estilos según tus necesidades
 
-                const label = document.createElement('label');
-                label.htmlFor = `checkbox-${dispositivo.id_dispositivo}`;
-                label.textContent = dispositivo.vehiculo;
+                dispositivosList.innerHTML += `<div class="form-control mr-4">
+  <label class="label cursor-pointer">
+    <input type="checkbox" id="checkbox-${dispositivo.id_dispositivo}" value="${dispositivo.id_dispositivo}" class="checkbox checkbox-primary" />
+    <span class="label-text">${dispositivo.vehiculo}</span>
+  </label>
+</div>`
 
-                dispositivosList.appendChild(checkbox);
-                dispositivosList.appendChild(label);
+
+
             });
             map = L.map('map').setView([10.719891, -71.515795], 16);
 
@@ -116,7 +163,7 @@
         }
 
         function realizarPeticion(id_dispositivo, vehiculo) {
-            const url = `http://localhost:3000/api/dispositivo/${id_dispositivo}`;
+            const url = `http://localhost:3000/dispositivo/${id_dispositivo}`;
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -137,7 +184,6 @@
                                         let coordenadasZona = zona(zonaAsignada.replace(/\s+/g, "_"))
                                         var zonaPolygon = L.polygon(coordenadasZona)
                                         zonasAsignadas[id_dispositivo] = zonaPolygon;
-                                        const indiceAleatorio = Math.floor(Math.random() * colores.length);
                                         pintarZona(coordenadasZona, colores[vehiculo])
                                     }
 
@@ -198,21 +244,6 @@
 
 
     </script>
-
-    <div id="dispositivos-list">
-
-    </div>
-    <input type="number" name="tiempo" id="tiempo">
-    <button onclick="cambiarTiempo()">Cambiar tiempo de actualizacion</button>
-    <div id="map"></div>
-
-    <style>
-        #map {
-            height: 800px;
-            width: 100%;
-        }
-    </style>
-
 </body>
 
 </html>

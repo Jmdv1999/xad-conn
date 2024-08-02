@@ -41,8 +41,8 @@
         <div id="container-form" class="w-100 bg-primary flex content-center items-center justify-center p-6">
             <div class="card bg-base-100 w-96 shadow-xl min-h-96">
                 <div class="card-body">
-                    <h2 class="card-title">Asignar Técnico a Dispositivo </h2>
-                    <form action="/asignar-tecnico" method="POST">
+                    <h2 class="card-title">Asignar zona a un vehiculo </h2>
+                    <form action="/asignar-dispositivo" method="POST">
                         <label class="form-control w-full max-w-xs">
                             <div class="label">
                                 <span class="label-text">Vehiculo:</span>
@@ -55,18 +55,14 @@
                                     <% }) %>
                             </select>
                         </label>
-
-
-
-
                         <label class="form-control w-full max-w-xs">
                             <div class="label">
-                                <span class="label-text">Tecnico:</span>
+                                <span class="label-text">Zona:</span>
                             </div>
-                            <select class="select select-bordered" name="tecnico_id" id="tecnico">
-                                <% tecnicos.forEach(tecnico=> { %>
-                                    <option value="<%= tecnico.id %>">
-                                        <%= tecnico.nombre %>
+                            <select class="select select-bordered" name="zona_id" id="zona">
+                                <% zonas.forEach(zona=> { %>
+                                    <option value="<%= zona.id %>">
+                                        <%= zona.nombre %>
                                     </option>
                                     <% }) %>
                             </select>
@@ -93,6 +89,7 @@
             </div>
 
         </div>
+
         <div id="container-tabla" class="w-full bg-primary flex content-center items-center justify-center p-6 h-full">
             <div class="card bg-base-100 w-full shadow-xl">
                 <div class="card-body max-h-96">
@@ -101,9 +98,9 @@
                             <!-- head -->
                             <thead>
                                 <tr>
-                                    <td>Vehiculo</td>
-                                    <td>Tecnico</td>
-                                    <td>Accion</td>
+                                    <th>Vehiculo</th>
+                                    <th>Zona</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -113,12 +110,12 @@
                                             <%= asignacion.vehiculo %>
                                         </td>
                                         <td>
-                                            <%= asignacion.nombre_tecnico %>
+                                            <%= asignacion.nombre_zona %>
                                         </td>
                                         <td>
-                                            <form method="POST" action="/desasignar-tecnico">
-                                                <input type="hidden" name="id" value="<%= asignacion.id %>">
-                                                <button class="btn btn-error" type="submit">Eliminar</button>
+                                            <form method="POST" action="/eliminar-asignacion">
+                                                <input type="hidden" name="asignacion_id" value="<%= asignacion.id %>">
+                                                <button type="submit" class="btn btn-error">Desasignar</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -130,7 +127,6 @@
             </div>
         </div>
     </main>
-
 
 
 
