@@ -37,8 +37,12 @@
         Nueva_Miranda = JSON.parse('<%-(Nueva_Miranda) %>')
         Salinas = JSON.parse('<%-(Salinas) %>')
         San_Crispulo = JSON.parse('<%-(San_Crispulo) %>')
-
-
+        Alto_Viento = JSON.parse('<%-(Alto_Viento) %>')
+        Los_Campos = JSON.parse('<%-(Los_Campos) %>')
+        Haticos = JSON.parse('<%-(Haticos) %>')
+        Punta_Leiva = JSON.parse('<%-(Punta_Leiva) %>')
+        Jobitos = JSON.parse('<%-(Jobitos) %>')
+        Mata_Seca = JSON.parse('<%-(Mata_Seca) %>')
 
         document.addEventListener('DOMContentLoaded', () => {
             //Instanciamos el mapa
@@ -57,6 +61,12 @@
             pintarZona(Nueva_Miranda)
             pintarZona(Salinas)
             pintarZona(San_Crispulo)
+            pintarZona(Alto_Viento)
+            pintarZona(Los_Campos)
+            pintarZona(Haticos)
+            pintarZona(Punta_Leiva)
+            pintarZona(Jobitos)
+            pintarZona(Mata_Seca)
 
 
 
@@ -66,10 +76,10 @@
                 console.log([clickedLatLng.lat, clickedLatLng.lng]);
             });
 
-            setInterval(() => {
-                ejecutar();
-                //console.log(`se pinto el mapa a las ${obtenerHoraActual()}`)
-            }, 5000);
+            // setInterval(() => {
+            //     ejecutar();
+            //     //console.log(`se pinto el mapa a las ${obtenerHoraActual()}`)
+            // }, 5000);
         });
         function ejecutar() {
             // Eliminamos los marcadores existentes

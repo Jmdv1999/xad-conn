@@ -7,11 +7,17 @@ const { Guarico } = require("./coordenadas/Guarico.js");
 const { Nueva_Miranda } = require("./coordenadas/Nueva_Miranda.js");
 const { Salinas } = require("./coordenadas/Salinas.js");
 const { San_Crispulo } = require("./coordenadas/San_Crispulo.js");
+const {Alto_Viento} = require("./coordenadas/Alto_Viento.js")
+const {Los_Campos} = require("./coordenadas/Los_Campos.js")
+const {Haticos} = require("./coordenadas/Haticos.js")
+const {Punta_Leiva} = require("./coordenadas/Punta_Leiva.js")
+const {Mata_Seca} = require ("./coordenadas/Mata_Seca.js");
 
 // app.<r>
 const express = require("express");
 const axios = require("axios");
 const db = require("./database");
+const { Jobitos } = require("./coordenadas/Jobitos.js");
 
 const app = express();
 const port = 3000;
@@ -26,8 +32,7 @@ app.set("view engine", "ejs");
  * TODO: tratar de hacerlo en el backend
  * !al trabajar con mapas, se me complico manejarlo en el backend, lo dejare hace por el momento
  */
-app.get(
-  "/14f539d73aa2411175ef606eb879f7c57b618dc98611ac348e22075ca47dfd9f",
+app.get("/14f539d73aa2411175ef606eb879f7c57b618dc98611ac348e22075ca47dfd9f",
   (req, res) => {
     db.all("SELECT * FROM dispositivos", (err, rows) => {
       if (err) {
@@ -43,6 +48,12 @@ app.get(
         Nueva_Miranda: JSON.stringify(Nueva_Miranda),
         Salinas: JSON.stringify(Salinas),
         San_Crispulo: JSON.stringify(San_Crispulo),
+        Alto_Viento: JSON.stringify(Alto_Viento),
+        Los_Campos: JSON.stringify(Los_Campos),
+        Haticos: JSON.stringify(Haticos),
+        Punta_Leiva: JSON.stringify(Punta_Leiva),
+        Jobitos: JSON.stringify(Jobitos),
+        Mata_Seca: JSON.stringify(Mata_Seca)
       });
     });
   }
@@ -66,6 +77,12 @@ app.get("/", (req, res) => {
       Nueva_Miranda: JSON.stringify(Nueva_Miranda),
       Salinas: JSON.stringify(Salinas),
       San_Crispulo: JSON.stringify(San_Crispulo),
+      Alto_Viento: JSON.stringify(Alto_Viento),
+      Los_Campos: JSON.stringify(Los_Campos),
+      Haticos: JSON.stringify(Haticos),
+      Punta_Leiva: JSON.stringify(Punta_Leiva),
+      Jobitos: JSON.stringify(Jobitos),
+      Mata_Seca: JSON.stringify(Mata_Seca)
     });
   });
 });

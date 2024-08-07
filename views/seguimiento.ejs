@@ -1,4 +1,3 @@
-dispositivos-lis
 <!DOCTYPE html>
 <html lang="es">
 
@@ -40,11 +39,9 @@ dispositivos-lis
             </ul>
         </div>
     </div>
-
     <main class="h-screen flex flex-col">
         <div id="container-form" class="w-full p-6">
             <div id="dispositivos-list" class="flex flex-row">
-
             </div>
             <input type="number" name="tiempo" id="tiempo" placeholder="Cambiar tiempo de actualizacion"
                 class="input input-bordered input-primary w-full max-w-xs" />
@@ -54,16 +51,10 @@ dispositivos-lis
             <div id="map" class="w-full h-screen"></div>
         </div>
     </main>
-
-
-
-
     <script>
         var tiempo = 1
         const dispositivosSeleccionados = [];
         var zonas = []
-
-        //contaderes para utilizar adelante, cuando los dispositivos esten fuera de la zona asignada
         var contadores = {
             Ranger: 0,
             Fortaleza: 0,
@@ -81,17 +72,9 @@ dispositivos-lis
             tiempo = document.getElementById('tiempo').value
             document.getElementById('tiempo').value = ""
         }
-
-        //aqui guardaremos la ubicacion de los marcadores a imprimir en el mapa
         var marcadores = [];
-
-        //Para poder hacer instanciaciones del mapa
         var map;
-
-        //Equipos registrados en la base de datos
         var dispositivos = JSON.parse('<%-(dispositivos) %>');
-
-        //Coordenadas
         Ballena = JSON.parse('<%-(Ballena) %>')
         Casco_Central_Uno = JSON.parse('<%-(Casco_Central_Uno) %>')
         Casitas_Cementerio = JSON.parse('<%-(Casitas_Cementerio) %>')
@@ -100,32 +83,29 @@ dispositivos-lis
         Nueva_Miranda = JSON.parse('<%-(Nueva_Miranda) %>')
         Salinas = JSON.parse('<%-(Salinas) %>')
         San_Crispulo = JSON.parse('<%-(San_Crispulo) %>')
-
+        Alto_Viento = JSON.parse('<%-(Alto_Viento) %>')
+        Los_Campos = JSON.parse('<%-(Los_Campos) %>')
+        Haticos = JSON.parse('<%-(Haticos) %>')
+        Punta_Leiva = JSON.parse('<%-(Punta_Leiva) %>')
+        Jobitos = JSON.parse('<%-(Jobitos) %>')
+        Mata_Seca = JSON.parse('<%-(Mata_Seca) %>')
         const zonasAsignadas = {}
-
         document.addEventListener('DOMContentLoaded', () => {
-
             const dispositivosList = document.getElementById('dispositivos-list');
             dispositivos.forEach(dispositivo => {
-
-                dispositivosList.innerHTML += `<div class="form-control mr-4">
-  <label class="label cursor-pointer">
-    <input type="checkbox" id="checkbox-${dispositivo.id_dispositivo}" value="${dispositivo.id_dispositivo}" class="checkbox checkbox-primary" />
-    <span class="label-text">${dispositivo.vehiculo}</span>
-  </label>
-</div>`
-
-
-
+                dispositivosList.innerHTML +=
+                    `<div class="form-control mr-4">
+                        <label class="label cursor-pointer">
+                            <input type="checkbox" id="checkbox-${dispositivo.id_dispositivo}" value="${dispositivo.id_dispositivo}" class="checkbox checkbox-primary" />
+                            <span class="label-text">${dispositivo.vehiculo}</span>
+                        </label>
+                     </div>`
             });
             map = L.map('map').setView([10.719891, -71.515795], 16);
-
             L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
                 attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             }).addTo(map);
-
-
             dispositivos.forEach(dispositivo => {
                 const checkbox = document.getElementById(`checkbox-${dispositivo.id_dispositivo}`);
                 checkbox.addEventListener('change', () => {
@@ -143,25 +123,20 @@ dispositivos-lis
                     ejecutar();
                 });
             });
-
             setInterval(() => {
                 ejecutar();
             }, tiempo * 60 * 1000);
         });
-
         function ejecutar() {
             marcadores.forEach(marcador => {
                 map.removeLayer(marcador);
             });
             marcadores = []; // Limpiamos la lista de marcadores
-
             dispositivosSeleccionados.forEach(seleccionado => {
                 //console.log(seleccionado)
                 realizarPeticion(seleccionado.id_dispositivo, seleccionado.vehiculo);
-
             });
         }
-
         function realizarPeticion(id_dispositivo, vehiculo) {
             const url = `http://localhost:3000/dispositivo/${id_dispositivo}`;
             fetch(url)
@@ -171,10 +146,8 @@ dispositivos-lis
                     if (datos.latitude && datos.longitude) {
                         let lat = parseFloat(datos.latitude);
                         let lng = parseFloat(datos.longitude);
-
                         var currentMarker = L.marker([lat, lng]).addTo(map).bindTooltip(vehiculo).openTooltip()
                         marcadores.push(currentMarker); // Agregamos el nuevo marcador a la lista
-
                         fetch(`http://localhost:3000/verificar-zona/${id_dispositivo}`)
                             .then(response => response.json())
                             .then(data => {
@@ -186,20 +159,13 @@ dispositivos-lis
                                         zonasAsignadas[id_dispositivo] = zonaPolygon;
                                         pintarZona(coordenadasZona, colores[vehiculo])
                                     }
-
                                 });
-
-
-
                             })
                             .catch(error => console.error('Error:', error));
-
-
                     }
                 })
                 .catch(error => console.error('Error:', error));
         }
-
         function pintarZona(zona, color = "red") {
             for (element in zona) {
                 for (const dispositivoId in zonasAsignadas) {
@@ -213,7 +179,6 @@ dispositivos-lis
                 L.polygon(zona[element], { color: color }).addTo(map)
             }
         }
-
         function zona(zonaasignada) {
             switch (zonaasignada) {
                 case 'Nueva_Miranda':
@@ -237,12 +202,37 @@ dispositivos-lis
                 case 'San_Crispulo':
                     return San_Crispulo;
                     break;
+                case "Ballena":
+                    return Ballena;
+                    break;
+                case "Nueva_Miranda":
+                    return Nueva_Miranda;
+                    break;
+                case "Salinas":
+                    return Salinas;
+                    break;
+                case "Alto_Viento":
+                    return Alto_Viento;
+                    break;
+                case "Los_Campos":
+                    return Los_Campos;
+                    break;
+                case "Haticos":
+                    return Haticos;
+                    break;
+                case "Punta_Leiva":
+                    return Punta_Leiva;
+                    break;
+                case "Jobitos":
+                    return Jobitos;
+                    break;
+                case "Mata_Seca":
+                    return Mata_Seca;
+                    break;
                 default:
                     break;
             }
         }
-
-
     </script>
 </body>
 
